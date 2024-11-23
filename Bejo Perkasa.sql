@@ -40,6 +40,35 @@ REPLACE INTO `data_kriteria` (`id_kriteria`, `kode_kriteria`, `nama_kriteria`, `
 	(6, 'C6', 'Tanggung Jawab', 3.000, 'Benefit'),
 	(7, 'C7', 'Tatakrama', 3.000, 'Benefit'),
 	(8, 'C8', 'Penampilan', 2.000, 'Benefit');
+	
+-- Dumping structure for view bejo_perkasa.normalisasi_bobot
+-- Creating temporary table to overcome VIEW dependency errors
+CREATE TABLE `normalisasi_bobot` (
+	`kode_kriteria` VARCHAR(10) NOT NULL COLLATE 'utf8mb4_general_ci',
+	`nama_kriteria` VARCHAR(100) NOT NULL COLLATE 'utf8mb4_general_ci',
+	`nilai_kriteria` DECIMAL(10,3) NOT NULL,
+	`bobot_normalisasi` DECIMAL(14,3) NULL
+) ENGINE=MyISAM;
+
+-- Dumping structure for table bejo_perkasa.pegawai
+CREATE TABLE IF NOT EXISTS `pegawai` (
+  `id_pegawai` int NOT NULL AUTO_INCREMENT,
+  `nama_karyawan` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  PRIMARY KEY (`id_pegawai`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Dumping data for table bejo_perkasa.pegawai: ~10 rows (approximately)
+REPLACE INTO `pegawai` (`id_pegawai`, `nama_karyawan`) VALUES
+	(1, 'Wawan'),
+	(2, 'Andi'),
+	(3, 'Pitri'),
+	(4, 'Suryana'),
+	(5, 'Agus'),
+	(6, 'Dudi'),
+	(7, 'Asep'),
+	(8, 'Topik'),
+	(9, 'Sukisno'),
+	(10, 'Ridwan');
 
 -- Dumping structure for table bejo_perkasa.konversi_penilaian
 CREATE TABLE IF NOT EXISTS `konversi_penilaian` (
@@ -142,34 +171,6 @@ REPLACE INTO `konversi_penilaian` (`id_konversi`, `id_pegawai`, `kode_kriteria`,
 CREATE TABLE `nilai_v` 
 ) ENGINE=MyISAM;
 
--- Dumping structure for view bejo_perkasa.normalisasi_bobot
--- Creating temporary table to overcome VIEW dependency errors
-CREATE TABLE `normalisasi_bobot` (
-	`kode_kriteria` VARCHAR(10) NOT NULL COLLATE 'utf8mb4_general_ci',
-	`nama_kriteria` VARCHAR(100) NOT NULL COLLATE 'utf8mb4_general_ci',
-	`nilai_kriteria` DECIMAL(10,3) NOT NULL,
-	`bobot_normalisasi` DECIMAL(14,3) NULL
-) ENGINE=MyISAM;
-
--- Dumping structure for table bejo_perkasa.pegawai
-CREATE TABLE IF NOT EXISTS `pegawai` (
-  `id_pegawai` int NOT NULL AUTO_INCREMENT,
-  `nama_karyawan` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  PRIMARY KEY (`id_pegawai`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- Dumping data for table bejo_perkasa.pegawai: ~10 rows (approximately)
-REPLACE INTO `pegawai` (`id_pegawai`, `nama_karyawan`) VALUES
-	(1, 'Wawan'),
-	(2, 'Andi'),
-	(3, 'Pitri'),
-	(4, 'Suryana'),
-	(5, 'Agus'),
-	(6, 'Dudi'),
-	(7, 'Asep'),
-	(8, 'Topik'),
-	(9, 'Sukisno'),
-	(10, 'Ridwan');
 
 -- Dumping structure for view bejo_perkasa.ranking_pegawai
 -- Creating temporary table to overcome VIEW dependency errors
@@ -189,7 +190,7 @@ CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `normalisasi_bobot` AS sele
 -- Dumping structure for view bejo_perkasa.vektor_s
 -- Removing temporary table and create final VIEW structure
 DROP TABLE IF EXISTS `vektor_s`;
-CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vektor_s` AS select `p`.`id_pegawai` AS `id_pegawai`,`p`.`nama_karyawan` AS `nama_karyawan`,round(exp(sum(log((case when (`dk`.`bobot_normalisasi` is not null) then pow(`kp`.`nilai_kriteria`,`dk`.`bobot_normalisasi`) end)))),5) AS `nilai_s` from ((`pegawai` `p` join `konversi_penilaian` `kp` on((`p`.`id_pegawai` = `kp`.`id_pegawai`))) join `daftar_kriteria` `dk` on((`kp`.`kode_kriteria` = `dk`.`kode_kriteria`))) group by `p`.`id_pegawai`;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vektor_s` AS select `p`.`id_pegawai` AS `id_pegawai`,`p`.`nama_karyawan` AS `nama_karyawan`,round(exp(sum(log((case when (`dk`.`bobot_normalisasi` is not null) then pow(`kp`.`nilai_kriteria`,`dk`.`bobot_normalisasi`) end)))),5) AS `nilai_s` from ((`pegawai` `p` join `konversi_penilaian` `kp` on((`p`.`id_pegawai` = `kp`.`id_pegawai`))) join `normalisasi_bobot` `dk` on((`kp`.`kode_kriteria` = `dk`.`kode_kriteria`))) group by `p`.`id_pegawai`;
 
 -- Dumping structure for view bejo_perkasa.nilai_v
 -- Removing temporary table and create final VIEW structure
